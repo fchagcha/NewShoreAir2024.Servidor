@@ -1,0 +1,16 @@
+{
+  "help": "https://go.microsoft.com/fwlink/?linkid=866610",
+  "root": true,
+  "dependentFileProviders": {
+    "add": {
+      "fileSuffixToExtension": {
+        "add": {
+          ".Agregado.cs": [ ".cs" ],
+          ".Referencia.cs": [ ".cs" ],
+          ".ReferenciaInversa.cs": [ ".cs" ],
+          ".Servicio.cs": [ ".cs" ]
+        }
+      }
+    }
+  }
+}

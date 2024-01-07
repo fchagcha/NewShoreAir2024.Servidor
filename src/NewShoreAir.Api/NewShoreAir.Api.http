@@ -1,0 +1,6 @@
+@NewShoreAir.Api_HostAddress = http://localhost:5216
+
+GET {{NewShoreAir.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
