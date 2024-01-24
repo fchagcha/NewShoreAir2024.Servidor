@@ -1,5 +1,6 @@
 ﻿namespace NewShoreAir.Business.Domain.Entidades
 {
+    [Table("Transportes")]
     public partial class Transporte : BaseEntity<string>
     {
         private ILazyLoader LazyLoader { get; set; }

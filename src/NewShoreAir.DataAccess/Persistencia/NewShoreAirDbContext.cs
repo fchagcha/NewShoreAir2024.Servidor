@@ -1,5 +1,8 @@
 ﻿
 
+using Fabrela.Domain.Core.Attributes;
+using Fabrela.Infraestructura.Data.Extensiones;
+
 namespace NewShoreAir.DataAccess.Persistencia
 {
     public class NewShoreAirDbContext : DbContext
@@ -10,6 +13,7 @@ namespace NewShoreAir.DataAccess.Persistencia
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.RegitrarEntidades();
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -38,9 +42,9 @@ namespace NewShoreAir.DataAccess.Persistencia
             return response;
         }
 
-        public DbSet<Transporte> Transportes { get; set; }
-        public DbSet<Viaje> Viajes { get; set; }
-        public DbSet<ViajeVuelo> ViajeVuelos { get; set; }
-        public DbSet<Vuelo> Vuelos { get; set; }
+        //public DbSet<Transporte> Transportes { get; set; }
+        //public DbSet<Viaje> Viajes { get; set; }
+        //public DbSet<ViajeVuelo> ViajeVuelos { get; set; }
+        //public DbSet<Vuelo> Vuelos { get; set; }
     }
 }

@@ -9,7 +9,7 @@ global using Microsoft.EntityFrameworkCore.Storage;
 global using Microsoft.Extensions.Caching.Memory;
 global using Microsoft.Extensions.Options;
 global using Microsoft.IdentityModel.Tokens;
-global using NewShoreAir.Business.Domain.Entidades;
+//global using NewShoreAir.Business.Domain.Entidades;
 global using NewShoreAir.DataAccess.Persistencia;
 global using NewShoreAir.Shared.Exceptions;
 global using NewShoreAir.Shared.Models;

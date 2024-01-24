@@ -18,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NewShoreAir.Business.Domain\NewShoreAir.Business.Domain.csproj" />
     <ProjectReference Include="..\NewShoreAir.Shared\NewShoreAir.Shared.csproj" />
   </ItemGroup>
 
