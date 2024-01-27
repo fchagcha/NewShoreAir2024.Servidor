@@ -225,7 +225,7 @@
                          x.arrivalStation.Equals(destino));
 
             if (vueloDirecto is not null)
-                return new List<VueloApiResponse> { vueloDirecto };
+                return [vueloDirecto];
 
             var rutas = new List<List<VueloApiResponse>>();
 
@@ -247,7 +247,7 @@
             var ruta =
                 rutas
                 ?.OrderBy(x => x.Count)
-                ?.FirstOrDefault() ?? new List<VueloApiResponse>();
+                ?.FirstOrDefault() ?? [];
 
             return ruta;
         }
