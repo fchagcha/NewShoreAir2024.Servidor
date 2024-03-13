@@ -1,10 +1,8 @@
 ﻿namespace NewShoreAir.DataAccess.UnitOfWork
 {
-    public class UnitOfWorkData(NewShoreAirDbContext dbContext) : IUnitOfWorkData
+    public class UoWCommand(NewShoreAirDbContext dbContext) : IUoWCommand
     {
         private volatile bool _disposedValue;
-
-        public CancellationToken CancellationToken { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -24,7 +22,7 @@
 
         public async Task<TEntidad> ObtenerAsync<TEntidad>(
             Expression<Func<TEntidad, bool>> predicado,
-            bool ignoreQueryFilter = false) where TEntidad : class, IEntity
+            CancellationToken cancellationToken = default) where TEntidad : class, IEntity
         {
             var entidad = dbContext.Set<TEntidad>().Local.AsQueryable().FirstOrDefault(predicado);
 
@@ -32,41 +30,32 @@
             {
                 var query = dbContext.Set<TEntidad>().AsQueryable();
 
-                if (ignoreQueryFilter)
-                    query = query.IgnoreQueryFilters();
-
-                entidad = await query.FirstOrDefaultAsync(predicado);
+                entidad = await query.FirstOrDefaultAsync(predicado, cancellationToken);
             }
 
             return entidad;
         }
         public IQueryable<TEntidad> Filtrar<TEntidad>(
             Expression<Func<TEntidad, bool>> predicado = null,
-            bool ignoreQueryFilter = false) where TEntidad : class, IEntity
+            CancellationToken cancellationToken = default) where TEntidad : class, IEntity
         {
             var query = dbContext.Set<TEntidad>().AsQueryable();
 
             if (predicado is not null)
                 query = query.Where(predicado);
-
-            if (ignoreQueryFilter)
-                query = query.IgnoreQueryFilters();
 
             return query;
         }
         public async Task<List<TEntidad>> ListarAsync<TEntidad>(
             Expression<Func<TEntidad, bool>> predicado = null,
-            bool ignoreQueryFilter = false) where TEntidad : class, IEntity
+            CancellationToken cancellationToken = default) where TEntidad : class, IEntity
         {
             var query = dbContext.Set<TEntidad>().AsQueryable();
 
             if (predicado is not null)
                 query = query.Where(predicado);
 
-            if (ignoreQueryFilter)
-                query = query.IgnoreQueryFilters();
-
-            return await query.ToListAsync();
+            return await query.ToListAsync(cancellationToken);
         }
         public async Task<TEntidad> AgregarAsync<TEntidad>(TEntidad entidad) where TEntidad : class, IEntity, IAggregateRoot
         {
@@ -74,43 +63,40 @@
             return entityEntry.Entity;
         }
 
-        IQueryable<TResult> IUnitOfWorkData.Proyectar<TEntidad, TResult>(Expression<Func<TEntidad, TResult>> selector, bool ignoreQueryFilter)
-        {
-            throw new NotImplementedException();
-        }
-
-        IQueryable<TEntidad> IUnitOfWorkData.ConsultaSql<TEntidad>(string consulta, params object[] parametros)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<TEntidad> IUnitOfWorkData.ObtenerPorIdAsync<TEntidad>(params object[] ids)
-        {
-            throw new NotImplementedException();
-        }
-
-        TEntidad IUnitOfWorkData.ObtenerDatosOriginales<TEntidad>(TEntidad entidad)
-        {
-            throw new NotImplementedException();
-        }
 
         public Task EjecutaStoredProcedure(string nombre, params object[] parametros)
         {
             throw new NotImplementedException();
         }
-
         public Task<TResult> EjecutaStoredProcedure<TResult>(string nombre, params object[] parametros)
         {
             throw new NotImplementedException();
         }
-
-
-        Task IUnitOfWorkData.EliminarAsync<TEntidad>(TEntidad entidad)
+        Task IUoWCommand.AgregarVariosAsync<TEntidad>(IEnumerable<TEntidad> entidades)
         {
             throw new NotImplementedException();
         }
-
-        Task IUnitOfWorkData.AgregarVariosAsync<TEntidad>(IEnumerable<TEntidad> entidades)
+        IQueryable<TEntidad> IUoWCommand.ConsultaSql<TEntidad>(string consulta, params object[] parametros)
+        {
+            throw new NotImplementedException();
+        }
+        Task IUoWCommand.EliminarAsync<TEntidad>(TEntidad entidad)
+        {
+            throw new NotImplementedException();
+        }
+        Task<bool> IUoWCommand.ExisteAsync<TEntidad>(Expression<Func<TEntidad, bool>> predicado, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+        TEntidad IUoWCommand.ObtenerDatosOriginales<TEntidad>(TEntidad entidad)
+        {
+            throw new NotImplementedException();
+        }
+        Task<TEntidad> IUoWCommand.ObtenerPorIdAsync<TEntidad>(params object[] ids)
+        {
+            throw new NotImplementedException();
+        }
+        IQueryable<TResult> IUoWCommand.Proyectar<TEntidad, TResult>(Expression<Func<TEntidad, TResult>> selector, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

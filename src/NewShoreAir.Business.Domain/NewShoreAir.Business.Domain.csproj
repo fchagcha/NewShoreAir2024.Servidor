@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fabrela.Domain.Core" Version="3.1.9" />
+    <PackageReference Include="Fabrela.Domain.Core" Version="3.3.13" />
   </ItemGroup>
 
 </Project>

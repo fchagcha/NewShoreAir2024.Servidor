@@ -1,49 +1,40 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace NewShoreAir.DataAccess.Behaviours
+﻿namespace NewShoreAir.DataAccess.Behaviours
 {
     public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
-        private readonly IUnitOfWorkService _unitOfWork;
+        private readonly IUoWService uowServices;
         private readonly ILogger<TransactionBehavior<TRequest, TResponse>> _logger;
 
         public TransactionBehavior(
-            IUnitOfWorkProvider unitOfWorkProvider,
+            IProvider provider,
             ILogger<TransactionBehavior<TRequest, TResponse>> logger)
         {
-            _unitOfWork = unitOfWorkProvider.ObtenerUnitOfWork<IUnitOfWorkService>();
+            uowServices = provider.ObtenerUnitOfWork<IUoWService>();
             _logger = logger ?? throw new ArgumentException(nameof(ILogger));
         }
 
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
-            try
+            var response = default(TResponse);
+
+            if (uowServices.ExisteTransaccionActiva())
+                return await next();
+
+            var strategy = uowServices.CrearEstrategiaDeEjecucion();
+
+            await strategy.ExecuteAsync(async () =>
             {
-                var response = default(TResponse);
+                await using var transaction = await uowServices.IniciarTransaccionAsync();
 
-                if (_unitOfWork.ExisteTransaccionActiva())
-                    return await next();
-
-                var strategy = _unitOfWork.CrearEstrategiaDeEjecucion();
-
-                await strategy.ExecuteAsync(async () =>
+                using (_logger.BeginScope(new List<KeyValuePair<string, object>> { new("TransactionContext", transaction.TransactionId) }))
                 {
-                    await using var transaction = await _unitOfWork.IniciarTransaccionAsync();
+                    response = await next();
 
-                    using (_logger.BeginScope(new List<KeyValuePair<string, object>> { new("TransactionContext", transaction.TransactionId) }))
-                    {
-                        response = await next();
+                    await uowServices.ConfirmarTransaccionAsync(transaction, cancellationToken);
+                }
+            });
 
-                        await _unitOfWork.ConfirmarTransaccionAsync(transaction);
-                    }
-                });
-
-                return response;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return response;
         }
     }
 }

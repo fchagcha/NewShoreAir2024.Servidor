@@ -8,12 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Exceptionless.AspNetCore" Version="6.0.3" />
-    <PackageReference Include="Fabrela.Domain.Core" Version="3.1.9" />
+    <PackageReference Include="Fabrela.Domain.Core" Version="3.3.13" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

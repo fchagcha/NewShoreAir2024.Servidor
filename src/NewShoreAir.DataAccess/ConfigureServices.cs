@@ -1,12 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using NewShoreAir.DataAccess.Behaviours;
-using NewShoreAir.DataAccess.Middleware;
-using NewShoreAir.DataAccess.Services;
-using NewShoreAir.DataAccess.UnitOfWork;
-
-namespace NewShoreAir.DataAccess
+﻿namespace NewShoreAir.DataAccess
 {
     public static class ConfigureServices
     {
@@ -14,9 +6,9 @@ namespace NewShoreAir.DataAccess
         {
             services.AddHttpContextAccessor();
 
-            services.AddScoped<IUnitOfWorkProvider, UnitOfWorkProvider>();
-            services.AddScoped<IUnitOfWorkService, UnitOfWorkService>();
-            services.AddScoped<IUnitOfWorkData, UnitOfWorkData>();
+            services.AddScoped<IProvider, Provider>();
+            services.AddScoped<IUoWService, UoWService>();
+            services.AddScoped<IUoWCommand, UoWCommand>();
 
 
             services.AddExceptionless(configuration);

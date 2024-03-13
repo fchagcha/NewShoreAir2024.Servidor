@@ -1,6 +1,6 @@
 ﻿namespace NewShoreAir.DataAccess.UnitOfWork
 {
-    public class UnitOfWorkService(NewShoreAirDbContext dbContext) : IUnitOfWorkService
+    public class UoWService(NewShoreAirDbContext dbContext) : IUoWService
     {
         private volatile bool _disposedValue;
         private IDbContextTransaction _currentTransaction;
@@ -30,7 +30,6 @@
         {
             return dbContext.Database.CreateExecutionStrategy();
         }
-
         public async Task<IDbContextTransaction> IniciarTransaccionAsync()
         {
             if (_currentTransaction != null) return null;
@@ -39,20 +38,19 @@
 
             return _currentTransaction;
         }
-
-        public async Task ConfirmarTransaccionAsync(IDbContextTransaction transaction)
+        public async Task ConfirmarTransaccionAsync(IDbContextTransaction transaction, CancellationToken cancellationToken = default)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
 
             try
             {
-                await SalvarCambiosAsync();
+                await SalvarCambiosAsync(cancellationToken);
                 await transaction.CommitAsync();
             }
             catch
             {
-                await RevertirTransaccion();
+                await RevertirTransaccionAsync();
                 throw;
             }
             finally
@@ -64,17 +62,15 @@
                 }
             }
         }
-
-        private async Task<int> SalvarCambiosAsync()
+        private async Task<int> SalvarCambiosAsync(CancellationToken cancellationToken = default)
         {
-            return await dbContext.SaveChangesAsync();
+            return await dbContext.SaveChangesAsync(cancellationToken);
         }
-        private async Task RevertirTransaccion()
+        private async Task RevertirTransaccionAsync()
         {
             try
             {
-                if (_currentTransaction is not null)
-                    await _currentTransaction.RollbackAsync();
+                await _currentTransaction?.RollbackAsync();
             }
             finally
             {
@@ -84,6 +80,23 @@
                     _currentTransaction = null;
                 }
             }
+        }
+
+        public async Task IniciarTransaccionSimpleAsync()
+        {
+            _currentTransaction = await dbContext.Database.BeginTransactionAsync();
+        }
+        public async Task ConfirmarTransaccionSimpleAsync()
+        {
+            await _currentTransaction.CommitAsync();
+        }
+        public async Task RevertirTransaccionSimpleAsync()
+        {
+            await _currentTransaction.RollbackAsync();
+        }
+        public async Task<int> SalvarCambiosSimpleAsync(CancellationToken cancellationToken = default)
+        {
+            return await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

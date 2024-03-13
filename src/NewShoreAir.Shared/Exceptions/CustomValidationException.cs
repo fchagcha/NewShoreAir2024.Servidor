@@ -2,15 +2,15 @@
 
 namespace NewShoreAir.Shared.Exceptions
 {
-    public class ValidationException : ApplicationException
+    public class CustomValidationException : ApplicationException
     {
         public IDictionary<string, string[]> Errors { get; }
 
-        public ValidationException() : base("Se presentaron uno o mas errores de validación")
+        public CustomValidationException() : base("Se presentaron uno o mas errores de validación")
         {
             Errors = new Dictionary<string, string[]>();
         }
-        public ValidationException(IEnumerable<ValidationFailure> failures) : this()
+        public CustomValidationException(IEnumerable<ValidationFailure> failures) : this()
         {
             Errors = failures
                 .GroupBy(e => e.PropertyName, e => e.ErrorMessage)

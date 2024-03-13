@@ -1,7 +1,4 @@
-﻿
-using ValidationException = NewShoreAir.Shared.Exceptions.ValidationException;
-
-namespace NewShoreAir.DataAccess.Middleware
+﻿namespace NewShoreAir.DataAccess.Middleware
 {
     public class ExceptionMiddleware
     {
@@ -24,7 +21,7 @@ namespace NewShoreAir.DataAccess.Middleware
             {
                 await ProcesaExcepcionAsync(context, ex, ex.Message, StatusCodes.Status401Unauthorized, requestBody);
             }
-            catch (ValidationException ex)
+            catch (CustomValidationException ex)
             {
                 var validaciones =
                     ex.Errors
@@ -54,7 +51,9 @@ namespace NewShoreAir.DataAccess.Middleware
                 var statusCode = StatusCodes.Status400BadRequest;
                 var mensaje = "Se ha producido un error en el servidor";
 
-                if (ex is DbUpdateConcurrencyException || ex.InnerException is DbUpdateConcurrencyException || ex.InnerException?.InnerException is DbUpdateConcurrencyException)
+                if (ex is DbUpdateConcurrencyException || 
+                    ex.InnerException is DbUpdateConcurrencyException || 
+                    ex.InnerException?.InnerException is DbUpdateConcurrencyException)
                 {
                     statusCode = 4002;
                     mensaje = "Error de concurrencia, vuelva a procesar la petición";
@@ -70,11 +69,9 @@ namespace NewShoreAir.DataAccess.Middleware
             if (context is not null && context.Request.ContentLength > 0)
             {
                 context.Request.EnableBuffering();
-                using (var reader = new StreamReader(context.Request.Body, leaveOpen: true))
-                {
-                    requestBody = await reader.ReadToEndAsync();
-                    context.Request.Body.Position = 0;
-                }
+                using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+                requestBody = await reader.ReadToEndAsync();
+                context.Request.Body.Position = 0;
             }
 
             return requestBody;

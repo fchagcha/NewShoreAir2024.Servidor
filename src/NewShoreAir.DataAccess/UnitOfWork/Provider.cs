@@ -1,21 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Collections;
-
-namespace NewShoreAir.DataAccess.UnitOfWork
+﻿namespace NewShoreAir.DataAccess.UnitOfWork
 {
-    public class UnitOfWorkProvider : IUnitOfWorkProvider
+    public class Provider(IServiceProvider serviceProvider) : IProvider
     {
-        private readonly IServiceProvider _serviceProvider;
         private Hashtable _unitOfWorkInstances;
 
-        public UnitOfWorkProvider(IServiceProvider serviceProvider)
+        public T CrearNuevaInstancia<T>() where T : new()
         {
-            _serviceProvider = serviceProvider;
+            return Activator.CreateInstance<T>();
         }
 
         public T ObtenerServicio<T>()
         {
-            return _serviceProvider.GetRequiredService<T>();
+            return serviceProvider.GetRequiredService<T>();
         }
 
         public T ObtenerUnitOfWork<T>() where T : IUnitOfWork
@@ -27,7 +23,7 @@ namespace NewShoreAir.DataAccess.UnitOfWork
             if (_unitOfWorkInstances.ContainsKey(unitOfWorkType))
                 return (T)_unitOfWorkInstances[unitOfWorkType];
 
-            T unitOfWork = _serviceProvider.GetRequiredService<T>();
+            T unitOfWork = serviceProvider.GetRequiredService<T>();
             _unitOfWorkInstances.Add(unitOfWorkType, unitOfWork);
 
             return unitOfWork;

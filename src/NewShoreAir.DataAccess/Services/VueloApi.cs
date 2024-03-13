@@ -1,6 +1,4 @@
-﻿
-
-namespace NewShoreAir.DataAccess.Services
+﻿namespace NewShoreAir.DataAccess.Services
 {
     public class VueloApi : IVueloApi
     {
@@ -8,21 +6,26 @@ namespace NewShoreAir.DataAccess.Services
         private readonly HttpClient _httpClient;
         private readonly VuelosApiSettings _vuelosApiSettings;
 
-        public VueloApi(IMemoryCache cache, IHttpClientFactory httpClientFactory, IOptions<VuelosApiSettings> vuelosApiSettings)
+        public VueloApi(IProvider provider)
         {
-            _cache = cache;
-            _httpClient = httpClientFactory.CreateClient();
+            _cache = provider.ObtenerServicio<IMemoryCache>();
+            _vuelosApiSettings = provider.ObtenerServicio<IOptions<VuelosApiSettings>>().Value;
 
-            _vuelosApiSettings = vuelosApiSettings.Value;
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => { return true; }
+            };
 
-            string uri = vuelosApiSettings.Value.Uri;
-            _httpClient.BaseAddress = new Uri(uri);
+            _httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri(_vuelosApiSettings.Uri)
+            };
         }
 
         public async Task<List<VueloApiResponse>> ListarVuelosApi()
         {
-            string key = _vuelosApiSettings.Key;
-            int minutosCache = _vuelosApiSettings.MinutosCache;
+            var key = _vuelosApiSettings.Key;
+            var minutosCache = _vuelosApiSettings.MinutosCache;
 
             var vuelos = await _cache.GetOrCreateAsync(key, async entry =>
             {

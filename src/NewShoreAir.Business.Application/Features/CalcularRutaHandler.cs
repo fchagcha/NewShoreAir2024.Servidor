@@ -1,19 +1,10 @@
 ﻿namespace NewShoreAir.Business.Application.Features
 {
-    public class CalcularRutaHandler : IRequestHandler<CalcularRutaRequest, CalcularRutaResponse>
+    public class CalcularRutaHandler(ILogger<CalcularRutaHandler> logger, IProvider provider) : IRequestHandler<CalcularRutaRequest, CalcularRutaResponse>
     {
-        private readonly ILogger<CalcularRutaHandler> _logger;
-        private readonly IUnitOfWorkData _unitOfWork;
-        private readonly IVueloApi _vueloApi;
-        private readonly IMapper _mapper;
-
-        public CalcularRutaHandler(ILogger<CalcularRutaHandler> logger, IUnitOfWorkProvider unitOfWorkProvider)
-        {
-            _logger = logger;
-            _unitOfWork = _unitOfWork = unitOfWorkProvider.ObtenerUnitOfWork<IUnitOfWorkData>();
-            _vueloApi = unitOfWorkProvider.ObtenerServicio<IVueloApi>();
-            _mapper = unitOfWorkProvider.ObtenerServicio<IMapper>();
-        }
+        private readonly IUoWCommand _unitOfWork = provider.ObtenerUnitOfWork<IUoWCommand>();
+        private readonly IVueloApi _vueloApi = provider.ObtenerServicio<IVueloApi>();
+        private readonly IMapper _mapper = provider.ObtenerServicio<IMapper>();
 
         public async Task<CalcularRutaResponse> Handle(CalcularRutaRequest request, CancellationToken cancellationToken)
         {
@@ -43,7 +34,7 @@
                 throw new CustomException("Lo sentimos, no pudimos encontrar una ruta de viaje que coincida exactamente con la cantidad de vuelos que estás buscando");
             }
 
-            _logger.LogInformation("Se consume Base de datos");
+            logger.LogInformation("Se consume Base de datos");
 
             var viajeVuelos = await
                 _unitOfWork
@@ -135,11 +126,11 @@
         {
             var vuelosApi = await _vueloApi.ListarVuelosApi();
 
-            _logger.LogInformation("Se consume API de NEWSHORE AIR");
+            logger.LogInformation("Se consume API de NEWSHORE AIR");
 
             if (!vuelosApi.Any())
             {
-                _logger.LogInformation("API NEWSHORE AIR, no cuenta con vuelos ingresados");
+                logger.LogInformation("API NEWSHORE AIR, no cuenta con vuelos ingresados");
                 return new();
             }
 
@@ -151,7 +142,7 @@
             {
                 var mensajeError = $"Origen ingresado {request.Origen}, no registrado en lista de vuelos";
 
-                _logger.LogError(mensajeError);
+                logger.LogError(mensajeError);
                 throw new CustomException(mensajeError);
             }
 
@@ -163,7 +154,7 @@
             {
                 var mensajeError = $"Destino ingresado {request.Destino}, no registrado en lista de vuelos";
 
-                _logger.LogError(mensajeError);
+                logger.LogError(mensajeError);
                 throw new CustomException(mensajeError);
             }
 
@@ -173,7 +164,7 @@
             {
                 var mensajeError = $"Su consulta no puede ser procesada, para Origen {request.Origen} y Destino {request.Destino}.";
 
-                _logger.LogError(mensajeError);
+                logger.LogError(mensajeError);
                 throw new CustomException(mensajeError);
             }
 
