@@ -29,6 +29,7 @@
             services.AddHttpClient();
             services.AddMemoryCache();
             services.AddDistributedMemoryCache();
+            services.AddSingleton<IApiService, ApiService>();
             services.AddSingleton<IVueloApi, VueloApi>();
 
             return services;

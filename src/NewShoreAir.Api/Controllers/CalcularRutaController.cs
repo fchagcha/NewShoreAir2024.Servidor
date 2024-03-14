@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using NewShoreAir.Business.Application.Dto;
 using NewShoreAir.Business.Application.Models;
 
 namespace NewShoreAir.Api.Controllers
@@ -16,7 +17,7 @@ namespace NewShoreAir.Api.Controllers
         }
 
         [HttpPost(Name = "CalcularRuta")]
-        [ProducesResponseType(typeof(CalcularRutaResponse), (int)System.Net.HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ViajeResponse), (int)System.Net.HttpStatusCode.OK)]
         public async Task<IActionResult> CalcularRuta([FromBody] CalcularRutaRequest request)
         {
             var respuesta = await _mediator.Send(request);

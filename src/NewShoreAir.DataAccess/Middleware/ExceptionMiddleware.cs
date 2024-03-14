@@ -51,8 +51,8 @@
                 var statusCode = StatusCodes.Status400BadRequest;
                 var mensaje = "Se ha producido un error en el servidor";
 
-                if (ex is DbUpdateConcurrencyException || 
-                    ex.InnerException is DbUpdateConcurrencyException || 
+                if (ex is DbUpdateConcurrencyException ||
+                    ex.InnerException is DbUpdateConcurrencyException ||
                     ex.InnerException?.InnerException is DbUpdateConcurrencyException)
                 {
                     statusCode = 4002;

@@ -1,57 +1,103 @@
 ﻿namespace NewShoreAir.DataAccess.Services
 {
-    public class VueloApi : IVueloApi
+    public class VueloApi(IApiService apiService, IOptions<VuelosApiSettings> vuelosApiSettings) : IVueloApi
     {
-        private readonly IMemoryCache _cache;
-        private readonly HttpClient _httpClient;
-        private readonly VuelosApiSettings _vuelosApiSettings;
+        private readonly IApiService _apiService = apiService;
+        private readonly VuelosApiSettings _vuelosApiSettings = vuelosApiSettings.Value;
 
-        public VueloApi(IProvider provider)
+        public async Task<IEnumerable<VueloApiResponse>> ObtenerRutaDeVuelos(string origen, string destino, int numeroDeVuelos)
         {
-            _cache = provider.ObtenerServicio<IMemoryCache>();
-            _vuelosApiSettings = provider.ObtenerServicio<IOptions<VuelosApiSettings>>().Value;
-
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => { return true; }
-            };
-
-            _httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri(_vuelosApiSettings.Uri)
-            };
-        }
-
-        public async Task<List<VueloApiResponse>> ListarVuelosApi()
-        {
+            var uri = _vuelosApiSettings.Uri;
             var key = _vuelosApiSettings.Key;
             var minutosCache = _vuelosApiSettings.MinutosCache;
 
-            var vuelos = await _cache.GetOrCreateAsync(key, async entry =>
+            var vuelosApi = await _apiService.GetFromApiAsync<VueloApiResponse>(uri, key, true, minutosCache);
+
+            if (vuelosApi.Count == 0)
+                return [];
+
+            var existeOrigen =
+                vuelosApi
+                .Exists(x => x.departureStation.Equals(origen));
+
+            if (!existeOrigen)
             {
-                try
+                var mensajeError = $"Origen ingresado {origen}, no registrado en lista de vuelos";
+                throw new CustomException(mensajeError);
+            }
+
+            var existeDestino =
+                vuelosApi
+                .Exists(x => x.arrivalStation.Equals(destino));
+
+            if (!existeDestino)
+            {
+                var mensajeError = $"Destino ingresado {destino}, no registrado en lista de vuelos";
+                throw new CustomException(mensajeError);
+            }
+
+            var rutaDeViaje = BuscarRutaDeVuelos(origen, destino, vuelosApi);
+
+            if (rutaDeViaje.Any())
+            {
+                var mensajeError = $"Su consulta no puede ser procesada, para Origen {origen} y Destino {destino}.";
+                throw new CustomException(mensajeError);
+            }
+
+            return rutaDeViaje;
+        }
+
+        private static IEnumerable<VueloApiResponse> BuscarRutaDeVuelos(
+           string origen,
+           string destino,
+           List<VueloApiResponse> vuelos)
+        {
+            var vueloDirecto =
+                vuelos
+                .Find(x => x.departureStation.Equals(origen) &&
+                           x.arrivalStation.Equals(destino));
+
+            if (vueloDirecto is not null)
+                return [vueloDirecto];
+
+            var rutas =
+                vuelos
+                .Where(v => v.departureStation.Equals(origen))
+                .SelectMany(primerVuelo =>
                 {
-                    var response = await _httpClient.GetAsync(key);
-                    response.EnsureSuccessStatusCode();
+                    var rutaDeVuelos = new HashSet<VueloApiResponse> { primerVuelo };
+                    return BuscarRutaDeVuelosRecursivo(primerVuelo, destino, vuelos, rutaDeVuelos);
+                });
 
-                    var json = await response.Content.ReadAsStringAsync();
-                    var vuelos = JsonConvert.DeserializeObject<List<VueloApiResponse>>(json);
+            return rutas.OrderBy(x => x.Count()).FirstOrDefault() ?? Enumerable.Empty<VueloApiResponse>();
+        }
+        private static IEnumerable<IEnumerable<VueloApiResponse>> BuscarRutaDeVuelosRecursivo(
+            VueloApiResponse vueloActual,
+            string destino,
+            List<VueloApiResponse> vuelos,
+            HashSet<VueloApiResponse> rutaDeVuelos)
+        {
+            if (vueloActual.arrivalStation.Equals(destino))
+            {
+                yield return rutaDeVuelos.ToList();
+            }
+            else
+            {
+                var destinosSiguientes =
+                    vuelos
+                    .Where(x => x.departureStation.Equals(vueloActual.arrivalStation) &&
+                                !rutaDeVuelos.Contains(x));
 
-                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(minutosCache);
-
-                    return vuelos;
-                }
-                catch (HttpRequestException ex)
+                foreach (var siguienteVuelo in destinosSiguientes)
                 {
-                    throw new CustomException("Error al obtener vuelos de la API." + ex.Message);
-                }
-                catch (JsonException ex)
-                {
-                    throw new CustomException("Error al deserializar la respuesta JSON de la API." + ex.Message);
-                }
-            });
+                    rutaDeVuelos.Add(siguienteVuelo);
 
-            return vuelos;
+                    foreach (var ruta in BuscarRutaDeVuelosRecursivo(siguienteVuelo, destino, vuelos, rutaDeVuelos))
+                        yield return ruta;
+
+                    rutaDeVuelos.Remove(siguienteVuelo);
+                }
+            }
         }
     }
 }

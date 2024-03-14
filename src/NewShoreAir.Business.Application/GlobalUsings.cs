@@ -1,5 +1,4 @@
-﻿global using AutoMapper;
-global using Fabrela.Domain.Core.Interfaces.UnitOfWork;
+﻿global using Fabrela.Domain.Core.Interfaces.UnitOfWork;
 global using FluentValidation;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;
@@ -8,7 +7,5 @@ global using Microsoft.Extensions.Logging;
 global using NewShoreAir.Business.Application.Dto;
 global using NewShoreAir.Business.Application.Models;
 global using NewShoreAir.Business.Domain.Entidades;
-global using NewShoreAir.Shared.Exceptions;
-global using NewShoreAir.Shared.Models;
 global using NewShoreAir.Shared.Services.Interfaces;
 global using System.Reflection;

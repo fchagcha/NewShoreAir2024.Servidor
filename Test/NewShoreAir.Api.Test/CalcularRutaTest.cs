@@ -13,12 +13,10 @@ namespace NewShoreAir.Api.Test
             // Arrange
             var mediatorMock = new Mock<IMediator>();
             var controller = new CalcularRutaController(mediatorMock.Object);
-            var request = new CalcularRutaRequest()
-            {
-                Origen = "MZL",
-                Destino = "BCN",
-                NumeroMaximoDeVuelos = 0
-            };
+            var request = new CalcularRutaRequest(
+                Origen: "MZL",
+                Destino: "BCN",
+                NumeroMaximoDeVuelos: 0);
 
             // Act
             var result = await controller.CalcularRuta(request);

@@ -4,6 +4,9 @@ namespace NewShoreAir.Shared.Services.Interfaces
 {
     public interface IVueloApi
     {
-        Task<List<VueloApiResponse>> ListarVuelosApi();
+        Task<IEnumerable<VueloApiResponse>> ObtenerRutaDeVuelos(
+            string origen,
+            string destino,
+            int numeroDeVuelos);
     }
 }
