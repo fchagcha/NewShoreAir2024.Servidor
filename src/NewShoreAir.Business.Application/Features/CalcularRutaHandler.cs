@@ -8,68 +8,22 @@ namespace NewShoreAir.Business.Application.Features
         private readonly IVueloApi _vueloApi = provider.ObtenerServicio<IVueloApi>();
 
         public async Task<ViajeResponse> Handle(CalcularRutaRequest request, CancellationToken cancellationToken)
-            => await
-                _unitOfWork
-                .ObtenerAsync<Viaje>(
-                    x => x.Origen.Equals(request.Origen) &&
-                         x.Destino.Equals(request.Destino))
+            => await 
+                ObtenerViajeAsync(request)
                 .PipeNullCheckAsync(
                     viaje => DevuelveViajeAsync(viaje),
                     viaje => AgregaViajeAsync(viaje, request));
 
+        private async Task<Viaje> ObtenerViajeAsync(CalcularRutaRequest request) 
+            => await 
+                _unitOfWork
+                .ObtenerAsync<Viaje>(x => x.Origen.Equals(request.Origen) && 
+                                          x.Destino.Equals(request.Destino));
         private async Task<ViajeResponse> DevuelveViajeAsync(Viaje viaje)
         {
             logger.LogInformation("Se consume Base de datos");
-
-            var viajeVuelos = await
-                _unitOfWork
-                .Filtrar<ViajeVuelo>(x => x.IdViaje == viaje.Id)
-                .OrderBy(x => x.Orden)
-                .Select(x => new
-                {
-                    x.Viaje.Origen,
-                    x.Viaje.Destino,
-                    x.Viaje.Precio,
-                    x.Viaje.NumeroDeVuelos,
-                    VueloOrigen = x.Vuelo.Origen,
-                    VueloDestino = x.Vuelo.Destino,
-                    VueloPrecio = x.Vuelo.Precio,
-                    VueloTransporteTransportista = x.Vuelo.Transporte.Transportista,
-                    VueloTransporteNumero = x.Vuelo.Transporte.Numero
-                })
-                .ToListAsync();
-
-            var response =
-                viajeVuelos
-                .GroupBy(x => new
-                {
-                    x.Origen,
-                    x.Destino,
-                    x.Precio,
-                    x.NumeroDeVuelos
-                })
-                .Select(x => new ViajeResponse
-                {
-                    Origen = x.Key.Origen,
-                    Destino = x.Key.Destino,
-                    Precio = x.Key.Precio,
-                    NumeroDeVuelos = x.Key.NumeroDeVuelos,
-                    Vuelos = x.Select(x => new VueloResponse
-                    {
-                        Origen = x.VueloOrigen,
-                        Destino = x.VueloDestino,
-                        Precio = x.VueloPrecio,
-                        Transporte = new TransporteResponse
-                        {
-                            Transportista = x.VueloTransporteTransportista,
-                            Numero = x.VueloTransporteNumero
-                        }
-                    })
-                    .ToList()
-                })
-                .First();
-
-            return response;
+            await Task.Yield();
+            return viaje.ToViajeResponse();
         }
         private async Task<ViajeResponse> AgregaViajeAsync(Viaje viaje, CalcularRutaRequest request)
         {
@@ -125,32 +79,14 @@ namespace NewShoreAir.Business.Application.Features
                 request.Destino,
                 request.NumeroMaximoDeVuelos);
 
-            var response = new ViajeResponse();
-            response.Origen = request.Origen;
-            response.Destino = request.Destino;
-            response.NumeroDeVuelos = vuelosApi.Count();
-            response.Precio = vuelosApi.Sum(x => x.price);
-            response.Vuelos =
-                vuelosApi
-                .Select(x =>
-                {
-                    var transporteDto = new TransporteResponse()
-                    {
-                        Numero = x.flightNumber,
-                        Transportista = x.flightCarrier
-                    };
-
-                    var vueloDto = new VueloResponse()
-                    {
-                        Origen = x.departureStation,
-                        Destino = x.arrivalStation,
-                        Precio = x.price,
-                        Transporte = transporteDto
-                    };
-
-                    return vueloDto;
-                })
-                .ToList();
+            var response = new ViajeResponse
+            {
+                Origen = request.Origen,
+                Destino = request.Destino,
+                NumeroDeVuelos = vuelosApi.Count(),
+                Precio = vuelosApi.Sum(x => x.price),
+                Vuelos = vuelosApi.Select(x => x.ToVueloResponseFromApi()).ToList()
+            };
 
             return response;
         }

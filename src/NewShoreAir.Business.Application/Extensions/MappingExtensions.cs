@@ -1,7 +1,27 @@
-﻿namespace NewShoreAir.Business.Application.Extensions
+﻿using NewShoreAir.Shared.Models;
+
+namespace NewShoreAir.Business.Application.Extensions
 {
     public static class MappingExtensions
     {
+        public static VueloResponse ToVueloResponseFromApi(this VueloApiResponse vueloApi)
+        {
+            if (vueloApi is null)
+                return default;
+
+            return new VueloResponse
+            {
+                Origen = vueloApi.departureStation,
+                Destino = vueloApi.arrivalStation,
+                Precio = vueloApi.price,
+                Transporte = new TransporteResponse
+                {
+                    Transportista = vueloApi.flightCarrier,
+                    Numero = vueloApi.flightNumber
+                }
+            };
+        }
+
         public static ViajeResponse ToViajeResponse(this Viaje viaje)
         {
             if (viaje is null)
@@ -13,7 +33,10 @@
                 Destino = viaje.Destino,
                 Precio = viaje.Precio,
                 NumeroDeVuelos = viaje.NumeroDeVuelos,
-                Vuelos = viaje.ViajeVuelos.Select(x => x.Vuelo.ToVueloResponse()).ToList()
+                Vuelos = viaje.ViajeVuelos
+                        .OrderBy(x =>x.Orden)
+                        .Select(x => x.Vuelo.ToVueloResponse())
+                        .ToList()
             };
         }
         public static VueloResponse ToVueloResponse(this Vuelo vuelo)
