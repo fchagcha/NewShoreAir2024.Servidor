@@ -7,6 +7,7 @@ Esta es una solución que permite calcular rutas de viaje entre diferentes desti
 - Utiliza **.NET 8** como tecnología principal.
 - Se integra con el **API** https://recruiting-api.newshore.es/api/flights para obtener información sobre vuelos.
 - Implementa una **arquitectura limpia** para garantizar la modularidad y mantenibilidad del código.
+- Se implemneta también Interceptors, Behaviours y Middlewares.
 - Base de datos SqlLite hospedad en la misma solución.
 - La aplicación ejecuta la página Swagger
 - En el archivo appsettings.json del Api, se puede configurar:
