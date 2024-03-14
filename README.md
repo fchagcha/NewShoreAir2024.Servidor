@@ -1,15 +1,12 @@
-Este proyecto está construido con .Net 8 usuando VS2022 , aplicando arquitectura orientada al dominio usando la libreria Fabrela.Domain.Core de mi autoria
+# Calculadora de Rutas de Viaje
 
-1.- Compile la aplicación para verificar los paquetes Nuget.
+Esta es una solución que permite calcular rutas de viaje entre diferentes destinos alrededor del mundo. La solución recibe como parámetros el origen y el destino del viaje del usuario. A continuación, el sistema consulta todos los vuelos asociados disponibles y determina si es posible encontrar una ruta de viaje entre los dos destinos especificados. En caso de que la ruta sea posible, se devuelve la ruta de viaje al usuario; de lo contrario, se muestra un mensaje indicando que la ruta no puede ser calculada.
 
-2.- Ejecute la aplicación con el perfil NewShoreAir.Api. La aplicación se ejecutará como autohospedada
+## Características Principales
 
-3.- Base de datos SqlLite hospedad en la misma solución.
-
-4.- La aplicación ejecuta la página Swagger
-
-5.- En el archivo appsettings.json del Api, se puede configurar:
-
-	- direccion para consumir api, actualmente lo hace con Rutas múltiples y de retorno, maxima dificultad
-	
-	- configurar el tiempo de vida de cache, para evitar el consumo repetitivo del API
+- Utiliza **.NET 8** como tecnología principal.
+- Se integra con el **API** https://recruiting-api.newshore.es/api/flights para obtener información sobre vuelos.
+- Implementa una **arquitectura limpia** para garantizar la modularidad y mantenibilidad del código.
+- Base de datos SqlLite hospedad en la misma solución.
+- La aplicación ejecuta la página Swagger
+- En el archivo appsettings.json del Api, se puede configurar:
